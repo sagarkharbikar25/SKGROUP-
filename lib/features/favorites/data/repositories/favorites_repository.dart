@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../../../../core/storage/prefs_store.dart';
-import '../../products/data/models/product_model.dart';
+import '../../../products/data/models/product_model.dart';
 
 abstract class FavoritesRepository {
   Future<List<Product>> getFavorites();
