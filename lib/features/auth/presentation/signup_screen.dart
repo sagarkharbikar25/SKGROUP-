@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 
@@ -30,7 +31,6 @@ class _SignupScreenState extends State<SignupScreen> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // Simulate signup response
       Future.delayed(const Duration(milliseconds: 900), () {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -49,13 +49,16 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account')),
+      appBar: AppBar(
+        title: const Text('Create Account'),
+      ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Form(
@@ -64,17 +67,21 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Join ShopSphere',
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      'Join the\nmarketplace.',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
+                        height: 1.15,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Fill in your details to create your account.',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                      'Enter your details to create your personal account.',
+                      style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
 
                     // Full Name
                     AppTextField(
@@ -92,7 +99,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: _usernameController,
                       label: 'Username',
                       hint: 'johndoe',
-                      prefixIcon: Icons.person_outline,
+                      prefixIcon: Icons.alternate_email_rounded,
                       validator: (val) =>
                           (val == null || val.trim().isEmpty) ? 'Username is required' : null,
                     ),
@@ -119,14 +126,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       label: 'Password',
                       hint: 'Minimum 6 characters',
                       isPassword: true,
-                      prefixIcon: Icons.lock_outline,
+                      prefixIcon: Icons.lock_outline_rounded,
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Password is required';
                         if (val.length < 6) return 'Password must be at least 6 characters';
                         return null;
                       },
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 32),
 
                     // Submit
                     AppButton(

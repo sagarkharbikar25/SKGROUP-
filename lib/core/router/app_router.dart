@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
+import 'fast_page.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
@@ -10,10 +11,12 @@ import '../../features/products/presentation/product_details_screen.dart';
 import '../../features/products/data/models/product_model.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/cart/presentation/cart_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final GlobalKey<NavigatorState> _shellNavigatorProductsKey = GlobalKey<NavigatorState>(debugLabel: 'products');
+final GlobalKey<NavigatorState> _shellNavigatorCartKey = GlobalKey<NavigatorState>(debugLabel: 'cart');
 final GlobalKey<NavigatorState> _shellNavigatorFavoritesKey = GlobalKey<NavigatorState>(debugLabel: 'favorites');
 final GlobalKey<NavigatorState> _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
@@ -33,7 +36,7 @@ final GoRouter appRouter = GoRouter(
       path: '/signup',
       builder: (context, state) => const SignupScreen(),
     ),
-    // Bottom navigation shell
+    // 5-Branch Shell Navigation (Home, Catalog, Cart, Saved, Profile)
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -58,6 +61,15 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          navigatorKey: _shellNavigatorCartKey,
+          routes: [
+            GoRoute(
+              path: '/cart',
+              builder: (context, state) => const CartScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
           navigatorKey: _shellNavigatorFavoritesKey,
           routes: [
             GoRoute(
@@ -77,16 +89,23 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
+    // Fast 220ms page transition for product details
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/products/:id',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final product = state.extra as Product?;
         if (product != null) {
-          return ProductDetailsScreen(product: product);
+          return fastPage(
+            key: state.pageKey,
+            child: ProductDetailsScreen(product: product),
+          );
         }
-        return const Scaffold(
-          body: Center(child: Text('Product details not available')),
+        return fastPage(
+          key: state.pageKey,
+          child: const Scaffold(
+            body: Center(child: Text('Product details not available')),
+          ),
         );
       },
     ),

@@ -81,8 +81,8 @@ class SearchFilterBar extends StatelessWidget {
                 return ChoiceChip(
                   label: const Text('All'),
                   selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) onCategorySelected(null);
+                  onSelected: (_) {
+                    onCategorySelected(null);
                   },
                 );
               }
