@@ -191,14 +191,31 @@ class HomeScreen extends StatelessWidget {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(AppRadius.pill),
                                 ),
-                                child: Text(
-                                  '\$9.99',
-                                  style: TextStyle(
-                                    fontFamily: 'serif',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: cs.primary,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_featuredProducts.first.hasDiscount) ...[
+                                      Text(
+                                        '\$${_featuredProducts.first.price.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontFamily: 'serif',
+                                          fontSize: 11,
+                                          decoration: TextDecoration.lineThrough,
+                                          color: cs.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    Text(
+                                      '\$${_featuredProducts.first.finalPrice.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontFamily: 'serif',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: cs.primary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

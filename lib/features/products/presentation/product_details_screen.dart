@@ -213,7 +213,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        '\$${product.discountedPrice.toStringAsFixed(2)}',
+                        '\$${product.finalPrice.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontFamily: 'serif',
                           fontSize: 28,
@@ -221,7 +221,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                           color: cs.primary,
                         ),
                       ),
-                      if (product.discountPercentage > 0) ...[
+                      if (product.hasDiscount) ...[
                         const SizedBox(width: 10),
                         Text(
                           '\$${product.price.toStringAsFixed(2)}',
@@ -343,7 +343,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                   ),
                   Text(
-                    '\$${product.discountedPrice.toStringAsFixed(2)}',
+                    '\$${product.finalPrice.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontSize: 20,

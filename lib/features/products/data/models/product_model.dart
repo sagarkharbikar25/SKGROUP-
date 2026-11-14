@@ -27,11 +27,17 @@ class Product {
     required this.images,
   });
 
-  /// Calculates actual discounted price rounded to 2 decimals
-  double get discountedPrice {
-    if (discountPercentage <= 0) return price;
-    return price * (1 - (discountPercentage / 100));
+  bool get hasDiscount => discountPercentage > 0;
+
+  /// Calculates actual final price rounded to 2 decimals
+  double get finalPrice {
+    if (!hasDiscount) return price;
+    final discounted = price * (1 - (discountPercentage / 100));
+    return double.parse(discounted.toStringAsFixed(2));
   }
+
+  /// Backward-compatible alias for finalPrice
+  double get discountedPrice => finalPrice;
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
