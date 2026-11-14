@@ -56,6 +56,7 @@ class ProductCatalogState {
     int? total,
     String? query,
     String? category,
+    bool clearCategory = false,
     String? sortBy,
     String? order,
     bool? isStale,
@@ -69,7 +70,7 @@ class ProductCatalogState {
       skip: skip ?? this.skip,
       total: total ?? this.total,
       query: query ?? this.query,
-      category: category ?? this.category,
+      category: clearCategory ? null : (category ?? this.category),
       sortBy: sortBy ?? this.sortBy,
       order: order ?? this.order,
       isStale: isStale ?? this.isStale,
@@ -114,13 +115,17 @@ class ProductListNotifier extends StateNotifier<ProductCatalogState> {
 
   Future<void> search(String query) async {
     if (state.query == query) return;
-    state = state.copyWith(query: query, category: null);
+    state = state.copyWith(query: query, clearCategory: true);
     await loadInitial();
   }
 
   Future<void> filterCategory(String? category) async {
     if (state.category == category) return;
-    state = state.copyWith(category: category, query: '');
+    if (category == null) {
+      state = state.copyWith(clearCategory: true, query: '');
+    } else {
+      state = state.copyWith(category: category, query: '');
+    }
     await loadInitial();
   }
 
