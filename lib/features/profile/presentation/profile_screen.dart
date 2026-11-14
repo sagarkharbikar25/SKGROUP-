@@ -225,12 +225,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 16),
 
             // Settings Group
-            Container(
-              decoration: BoxDecoration(
-                color: cs.surface,
+            Material(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AppRadius.m),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.m),
-                border: Border.all(color: cs.outline),
+                side: BorderSide(color: cs.outline),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   SwitchListTile(

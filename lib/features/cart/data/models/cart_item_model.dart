@@ -1,4 +1,4 @@
-import '../../products/data/models/product_model.dart';
+import '../../../products/data/models/product_model.dart';
 
 class CartItem {
   final Product product;
@@ -35,3 +35,4 @@ class CartItem {
     );
   }
 }
+

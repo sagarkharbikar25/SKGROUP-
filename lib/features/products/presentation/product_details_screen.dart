@@ -48,19 +48,24 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     itemCount: images.length,
                     onPageChanged: (i) => setState(() => _currentImageIndex = i),
                     itemBuilder: (context, index) {
-                      return Hero(
-                        tag: 'product_image_${product.id}',
-                        child: CachedNetworkImage(
-                          imageUrl: images[index],
-                          fit: BoxFit.contain,
-                          placeholder: (_, __) => Center(
-                            child: CircularProgressIndicator(color: cs.primary),
-                          ),
-                          errorWidget: (_, __, ___) => const Center(
-                            child: Icon(Icons.image_not_supported_outlined, size: 48),
-                          ),
+                      final imageWidget = CachedNetworkImage(
+                        imageUrl: images[index],
+                        fit: BoxFit.contain,
+                        placeholder: (_, __) => Center(
+                          child: CircularProgressIndicator(color: cs.primary),
+                        ),
+                        errorWidget: (_, __, ___) => const Center(
+                          child: Icon(Icons.image_not_supported_outlined, size: 48),
                         ),
                       );
+
+                      if (index == 0) {
+                        return Hero(
+                          tag: 'product_image_${product.id}',
+                          child: imageWidget,
+                        );
+                      }
+                      return imageWidget;
                     },
                   ),
                   if (images.length > 1)
