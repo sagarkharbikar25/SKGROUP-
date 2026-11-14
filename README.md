@@ -15,6 +15,14 @@ The codebase adheres strictly to clean architecture principles, utilizing **Flut
 
 ---
 
+## 📦 Deliverables & Quick Links
+
+- **Direct APK Download (Google Drive):** [Download Standalone Release APK](https://drive.google.com/drive/folders/1OjZooQwX13ejuZiX7Ai9uEqOfaPBF7pL?usp=sharing)
+- **GitHub Repository:** [https://github.com/sagarkharbikar25/SKGROUP-](https://github.com/sagarkharbikar25/SKGROUP-)
+- **Postman API Collection:** [`docs/postman.json`](docs/postman.json) (Pre-configured collection used for REST contract validation)
+
+---
+
 ## 🏗️ Architecture & Branching Strategy
 
 The repository follows a clean, structured multi-branch workflow:
@@ -121,12 +129,13 @@ Launch on your connected Android emulator or device:
 flutter run
 ```
 
-### 5. Build Production Release APK
-To compile the standalone release APK for submission:
+### 5. Production Release APK
+- **Google Drive Direct Download:** [ShopSphere Release APK](https://drive.google.com/drive/folders/1OjZooQwX13ejuZiX7Ai9uEqOfaPBF7pL?usp=sharing)
+- Or compile locally:
 ```bash
 flutter build apk --release
 ```
-The output APK will be generated at:
+The output APK is generated at:
 ```text
 build/app/outputs/flutter-apk/app-release.apk
 ```
