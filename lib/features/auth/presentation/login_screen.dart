@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../application/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -31,16 +33,27 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // Simulate login for frontend branch testing
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
+      final success = await ref.read(authControllerProvider.notifier).login(
+            _usernameController.text.trim(),
+            _passwordController.text.trim(),
+          );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
           context.go('/home');
+        } else {
+          final err = ref.read(authControllerProvider).errorMessage ?? 'Login failed';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(err),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
         }
-      });
+      }
     }
   }
 
