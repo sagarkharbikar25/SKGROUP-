@@ -42,3 +42,4 @@ abstract final class AppMotion {
   static const base = Duration(milliseconds: 240);
   static const curve = Curves.easeOutCubic;
 }
+

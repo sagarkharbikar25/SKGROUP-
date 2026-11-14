@@ -68,3 +68,4 @@ class AppSkeleton extends StatelessWidget {
     );
   }
 }
+
