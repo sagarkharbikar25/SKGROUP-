@@ -107,7 +107,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   IconButton(
                     icon: const Icon(Icons.shopping_bag_outlined),
                     tooltip: 'Shopping Bag',
-                    onPressed: () => context.push('/cart'),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      context.go('/cart');
+                    },
                   ),
                   if (cartItemCount > 0)
                     Positioned(
@@ -358,6 +361,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         content: Row(
                           children: [
                             const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
@@ -368,9 +373,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         action: SnackBarAction(
                           label: 'View Bag',
                           textColor: Colors.amberAccent,
-                          onPressed: () => context.push('/cart'),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            context.go('/cart');
+                          },
                         ),
-                        duration: const Duration(seconds: 3),
+                        duration: const Duration(milliseconds: 1800),
                       ),
                     );
                   },

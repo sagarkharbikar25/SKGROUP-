@@ -48,6 +48,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                 return Expanded(
                   child: InkWell(
                     onTap: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       navigationShell.goBranch(
                         index,
                         initialLocation: index == currentIndex,
