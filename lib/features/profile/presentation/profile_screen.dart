@@ -16,23 +16,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
 
   void _showLogoutDialog() {
+    final router = GoRouter.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to log out of ShopSphere? Your local session will be securely cleared.'),
+        content: const Text(
+          'Are you sure you want to log out of ShopSphere? Your local session will be securely cleared.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await ref.read(authControllerProvider.notifier).logout();
-              if (mounted) {
-                context.go('/login');
-              }
+              Navigator.of(dialogContext).pop();
+              try {
+                await ref.read(authControllerProvider.notifier).logout();
+              } catch (_) {}
+              router.go('/login');
             },
             child: const Text('Sign Out'),
           ),

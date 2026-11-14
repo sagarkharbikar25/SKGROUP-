@@ -137,3 +137,4 @@ class _ShopSphereEmblemPainter extends CustomPainter {
         oldDelegate.isDark != isDark;
   }
 }
+
