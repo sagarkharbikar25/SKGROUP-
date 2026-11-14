@@ -1,0 +1,40 @@
+name: shopsphere
+description: "A modern product catalog Flutter application for Sankar Group evaluation."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management (Pure Dart, zero codegen)
+  flutter_riverpod: ^2.5.1
+
+  # Navigation & Routing
+  go_router: ^14.2.0
+
+  # Networking & HTTP
+  dio: ^5.4.3+1
+
+  # Storage: Secure for tokens, SharedPrefs for preferences & offline JSON cache
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.2.3
+
+  # Image Caching & UI helpers
+  cached_network_image: ^3.3.1
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/sample/
