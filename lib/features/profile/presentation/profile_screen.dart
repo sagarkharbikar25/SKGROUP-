@@ -227,7 +227,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // Settings Group
             Material(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppRadius.m),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.m),
                 side: BorderSide(color: cs.outline),
