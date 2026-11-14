@@ -72,14 +72,31 @@ class ProductCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.pill),
                       border: Border.all(color: cs.outline, width: 1),
                     ),
-                    child: Text(
-                      '\$${product.discountedPrice.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontFamily: 'serif',
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: cs.onSurface,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (product.hasDiscount) ...[
+                          Text(
+                            '\$${product.price.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 10,
+                              decoration: TextDecoration.lineThrough,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          '\$${product.finalPrice.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
