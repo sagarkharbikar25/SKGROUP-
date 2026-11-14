@@ -30,15 +30,30 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              width: 108,
+              height: 108,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: theme.colorScheme.outline),
               ),
-              child: Icon(
-                Icons.shopping_bag_outlined,
-                size: 64,
-                color: theme.colorScheme.primary,
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: theme.colorScheme.primary,
+                  child: const Center(
+                    child: Text(
+                      'S',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),
