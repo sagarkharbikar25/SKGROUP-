@@ -150,55 +150,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Demo credentials banner
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: cs.surface,
+                      Material(
+                        color: cs.surface,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadius.m),
-                          border: Border.all(color: cs.outline),
+                          side: BorderSide(color: cs.outline),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.key_rounded, size: 20, color: cs.primary),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Demo Account',
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: _fillDemoCredentials,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            child: Row(
+                              children: [
+                                Icon(Icons.key_rounded, size: 20, color: cs.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Demo Account (Tap to Fill)',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color: cs.onSurface,
+                                        ),
+                                      ),
+                                      Text(
+                                        'emilys / emilyspass',
+                                        style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: cs.primary.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                                  ),
+                                  child: Text(
+                                    'Auto-fill',
                                     style: TextStyle(
+                                      color: cs.primary,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color: cs.onSurface,
+                                      fontSize: 11,
                                     ),
                                   ),
-                                  Text(
-                                    'emilys / emilyspass',
-                                    style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _fillDemoCredentials,
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                backgroundColor: cs.primary.withOpacity(0.1),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.pill),
                                 ),
-                              ),
-                              child: Text(
-                                'Auto-fill',
-                                style: TextStyle(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
