@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../data/models/product_model.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../cart/application/cart_notifier.dart';
+import '../../favorites/application/favorites_notifier.dart';
 
-class ProductDetailsScreen extends StatefulWidget {
+class ProductDetailsScreen extends ConsumerStatefulWidget {
   final Product product;
 
   const ProductDetailsScreen({
@@ -12,12 +16,11 @@ class ProductDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+  ConsumerState<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
 }
 
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   int _currentImageIndex = 0;
-  bool _isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     final cs = theme.colorScheme;
     final product = widget.product;
     final images = product.images.isNotEmpty ? product.images : [product.thumbnail];
+
+    final favorites = ref.watch(favoritesNotifierProvider);
+    final isFav = favorites.any((p) => p.id == product.id);
+    final cartItemCount = ref.watch(cartNotifierProvider).fold(0, (sum, i) => sum + i.quantity);
 
     return Scaffold(
       body: CustomScrollView(
@@ -88,17 +95,51 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
             ),
             actions: [
+              // Shopping bag shortcut
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_bag_outlined),
+                    tooltip: 'Shopping Bag',
+                    onPressed: () => context.push('/cart'),
+                  ),
+                  if (cartItemCount > 0)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: cs.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text(
+                          '$cartItemCount',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: cs.onPrimary,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              // Favorite button
               IconButton(
                 icon: Icon(
-                  _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: _isFavorite ? Colors.red : cs.onSurface,
+                  isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isFav ? Colors.red : cs.onSurface,
                 ),
                 onPressed: () {
-                  setState(() => _isFavorite = !_isFavorite);
+                  ref.read(favoritesNotifierProvider.notifier).toggleFavorite(product);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        _isFavorite ? 'Saved to favorites' : 'Removed from favorites',
+                        !isFav ? 'Saved to favorites' : 'Removed from favorites',
                       ),
                       duration: const Duration(seconds: 1),
                     ),
@@ -275,7 +316,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ],
       ),
 
-      // Sticky Bottom Bar with Price + CTA
+      // Sticky Bottom Bar with functional Add to Bag
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
         decoration: BoxDecoration(
@@ -308,8 +349,24 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () {
+                    ref.read(cartNotifierProvider.notifier).addToCart(product);
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Added to shopping bag!')),
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text('${product.title} added to bag!')),
+                          ],
+                        ),
+                        action: SnackBarAction(
+                          label: 'View Bag',
+                          textColor: Colors.amberAccent,
+                          onPressed: () => context.push('/cart'),
+                        ),
+                        duration: const Duration(seconds: 3),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.shopping_bag_outlined, size: 18),

@@ -11,10 +11,12 @@ import '../../features/products/presentation/product_details_screen.dart';
 import '../../features/products/data/models/product_model.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/cart/presentation/cart_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final GlobalKey<NavigatorState> _shellNavigatorProductsKey = GlobalKey<NavigatorState>(debugLabel: 'products');
+final GlobalKey<NavigatorState> _shellNavigatorCartKey = GlobalKey<NavigatorState>(debugLabel: 'cart');
 final GlobalKey<NavigatorState> _shellNavigatorFavoritesKey = GlobalKey<NavigatorState>(debugLabel: 'favorites');
 final GlobalKey<NavigatorState> _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
@@ -34,7 +36,7 @@ final GoRouter appRouter = GoRouter(
       path: '/signup',
       builder: (context, state) => const SignupScreen(),
     ),
-    // Floating Pill Shell Navigation
+    // 5-Branch Shell Navigation (Home, Catalog, Cart, Saved, Profile)
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -55,6 +57,15 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: '/products',
               builder: (context, state) => const ProductsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _shellNavigatorCartKey,
+          routes: [
+            GoRoute(
+              path: '/cart',
+              builder: (context, state) => const CartScreen(),
             ),
           ],
         ),

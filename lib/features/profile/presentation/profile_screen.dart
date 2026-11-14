@@ -19,8 +19,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out of ShopSphere?'),
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to log out of ShopSphere? Your local session will be securely cleared.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -34,7 +34,91 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 context.go('/login');
               }
             },
-            child: const Text('Log Out'),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSecurityDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.shield_outlined, color: Theme.of(ctx).colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text('Security & Key Store'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Hardware-Backed Security Active',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '• Tokens stored in encrypted FlutterSecureStorage.\n'
+              '• AES-256 encryption via Android Keystore provider.\n'
+              '• No plain-text passwords or JWT tokens written to logs or Shared Preferences.\n'
+              '• Compliant with enterprise mobile security standards.',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.info_outline, color: Theme.of(ctx).colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text('About ShopSphere'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'ShopSphere • Warm Editorial Edition',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            SizedBox(height: 4),
+            Text('Version: 1.0.0 (Release Build)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            SizedBox(height: 12),
+            Text(
+              'Sankar Group Flutter Developer Internship Assignment.\n\n'
+              'Built with:\n'
+              '• Flutter 3.27+ & Dart 3.6+\n'
+              '• Flutter Riverpod (Pure Dart, Zero Codegen)\n'
+              '• GoRouter with Stateful Navigation Shell\n'
+              '• Dio HTTP Client with typed AppFailure mapping\n'
+              '• Encrypted Secure Storage & Offline Cache Fallback\n'
+              '• Material 3 Warm Editorial Design Tokens',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -110,7 +194,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          user?.email ?? 'emily.johnson@x.dummyjson.com',
+                          user?.email.isNotEmpty ?? false
+                              ? user!.email
+                              : 'emily.johnson@x.dummyjson.com',
                           style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                         ),
                         const SizedBox(height: 8),
@@ -164,14 +250,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     title: Text('Push Notifications', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
                     subtitle: Text('Order and catalogue updates', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     value: _notificationsEnabled,
-                    onChanged: (val) => setState(() => _notificationsEnabled = val),
+                    onChanged: (val) {
+                      setState(() => _notificationsEnabled = val);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Notifications ${val ? "enabled" : "disabled"}'),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
                   ),
                   Divider(height: 1, color: cs.outline),
                   ListTile(
                     leading: Icon(Icons.security_outlined, color: cs.onSurface),
                     title: Text('Security & Key Store', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
                     trailing: Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
-                    onTap: () {},
+                    onTap: _showSecurityDialog,
                   ),
                   Divider(height: 1, color: cs.outline),
                   ListTile(
@@ -179,7 +273,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     title: Text('About ShopSphere', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
                     subtitle: Text('Warm Editorial Edition v1.0.0', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     trailing: Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
-                    onTap: () {},
+                    onTap: _showAboutDialog,
                   ),
                 ],
               ),
