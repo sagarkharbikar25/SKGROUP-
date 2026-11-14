@@ -18,3 +18,4 @@ CustomTransitionPage<T> fastPage<T>({required LocalKey key, required Widget chil
         );
       },
     );
+

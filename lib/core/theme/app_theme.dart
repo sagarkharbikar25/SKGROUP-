@@ -62,7 +62,7 @@ ThemeData buildTheme(Brightness b) {
     scaffoldBackgroundColor: bg,
     textTheme: text,
     dividerColor: line,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surface,
       elevation: 0,
       margin: EdgeInsets.zero,
