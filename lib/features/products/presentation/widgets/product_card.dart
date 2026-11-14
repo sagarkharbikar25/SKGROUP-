@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/product_model.dart';
+import '../../../../core/theme/app_tokens.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -19,148 +20,145 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.m),
+        border: Border.all(color: cs.outline, width: 1),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image with Favorite & Discount badges
+            // Image Stack
             Stack(
               children: [
                 AspectRatio(
-                  aspectRatio: 1.2,
+                  aspectRatio: 1.15,
                   child: Hero(
                     tag: 'product_image_${product.id}',
                     child: CachedNetworkImage(
                       imageUrl: product.thumbnail,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        color: cs.surface,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: cs.primary,
                           ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image_not_supported_outlined, color: Colors.grey),
+                        color: cs.surface,
+                        child: Icon(Icons.image_outlined, color: cs.onSurfaceVariant),
                       ),
                     ),
                   ),
                 ),
-                // Discount tag
-                if (product.discountPercentage > 0)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade600,
-                        borderRadius: BorderRadius.circular(6),
+
+                // Editorial Corner Price Pill (Overlapping)
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cs.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      border: Border.all(color: cs.outline, width: 1),
+                    ),
+                    child: Text(
+                      '\$${product.discountedPrice.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: cs.onSurface,
                       ),
-                      child: Text(
-                        '-${product.discountPercentage.toStringAsFixed(0)}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                // Favorite Icon
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Material(
+                    color: cs.surface.withOpacity(0.9),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: onFavoriteToggle,
+                      child: Padding(
+                        padding: const EdgeInsets.all(7.0),
+                        child: Icon(
+                          isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                          size: 18,
+                          color: isFavorite ? Colors.red : cs.onSurfaceVariant,
                         ),
                       ),
                     ),
                   ),
-                // Favorite Button
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: IconButton(
-                    iconSize: 22,
-                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.9),
-                    ),
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey.shade700,
-                    ),
-                    onPressed: onFavoriteToggle,
-                  ),
                 ),
               ],
             ),
-            // Product info
+
+            // Card Text Info
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.brand,
+                    product.brand.toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.primary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: cs.secondary,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     product.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      height: 1.2,
+                      height: 1.25,
+                      color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Rating
+                  // Rating row
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-                      const SizedBox(width: 4),
+                      const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                      const SizedBox(width: 3),
                       Text(
                         product.rating.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      if (product.stock < 10)
-                        Text(
-                          'Only ${product.stock} left',
-                          style: TextStyle(fontSize: 10, color: Colors.orange.shade800),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  // Price
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        '\$${product.discountedPrice.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: cs.onSurface,
                         ),
                       ),
                       if (product.discountPercentage > 0) ...[
-                        const SizedBox(width: 6),
+                        const Spacer(),
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          '-${product.discountPercentage.toStringAsFixed(0)}%',
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
-                            decoration: TextDecoration.lineThrough,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: cs.primary,
                           ),
                         ),
                       ],

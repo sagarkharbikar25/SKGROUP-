@@ -5,6 +5,7 @@ import 'widgets/product_card.dart';
 import 'widgets/search_filter_bar.dart';
 import 'widgets/sort_bottom_sheet.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/app_refresh.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -20,7 +21,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
   String _sortBy = 'id';
   String _order = 'asc';
 
-  // Sample static catalog for Phase 1 frontend review (Phase 3 wires to Riverpod)
   final List<Product> _allProducts = const [
     Product(
       id: 1,
@@ -89,6 +89,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    // Simulates fast refresh
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (mounted) setState(() {});
+  }
+
   void _openSortSheet() {
     showModalBottomSheet(
       context: context,
@@ -110,7 +116,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtered list
     final filtered = _allProducts.where((p) {
       final matchesSearch = _searchQuery.isEmpty ||
           p.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -121,7 +126,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Catalog'),
       ),
       body: Column(
         children: [
@@ -134,50 +139,60 @@ class _ProductsScreenState extends State<ProductsScreen> {
             onSortTap: _openSortSheet,
           ),
           Expanded(
-            child: filtered.isEmpty
-                ? const EmptyView(
-                    title: 'No products found',
-                    message: 'No items match your search or filter criteria.',
-                  )
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Responsive column count based on width:
-                      // <600dp: 2 columns, 600-900dp: 3 columns, >900dp: 4 columns
-                      final int crossAxisCount = constraints.maxWidth < 600
-                          ? 2
-                          : (constraints.maxWidth < 900 ? 3 : 4);
-
-                      return GridView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          childAspectRatio: 0.68,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+            child: AppRefresh(
+              onRefresh: _handleRefresh,
+              child: filtered.isEmpty
+                  ? const CustomScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: EmptyView(
+                            title: 'No products found',
+                            message: 'Try adjusting your search or filters.',
+                          ),
                         ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final product = filtered[index];
-                          final isFav = _favoriteIds.contains(product.id);
+                      ],
+                    )
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final int crossAxisCount = constraints.maxWidth < 600
+                            ? 2
+                            : (constraints.maxWidth < 900 ? 3 : 4);
 
-                          return ProductCard(
-                            product: product,
-                            isFavorite: isFav,
-                            onFavoriteToggle: () {
-                              setState(() {
-                                if (isFav) {
-                                  _favoriteIds.remove(product.id);
-                                } else {
-                                  _favoriteIds.add(product.id);
-                                }
-                              });
-                            },
-                            onTap: () => context.push('/products/${product.id}', extra: product),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                        return GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 100.0),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            childAspectRatio: 0.65,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final product = filtered[index];
+                            final isFav = _favoriteIds.contains(product.id);
+
+                            return ProductCard(
+                              product: product,
+                              isFavorite: isFav,
+                              onFavoriteToggle: () {
+                                setState(() {
+                                  if (isFav) {
+                                    _favoriteIds.remove(product.id);
+                                  } else {
+                                    _favoriteIds.add(product.id);
+                                  }
+                                });
+                              },
+                              onTap: () => context.push('/products/${product.id}', extra: product),
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
           ),
         ],
       ),

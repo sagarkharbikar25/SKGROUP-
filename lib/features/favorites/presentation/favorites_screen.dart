@@ -12,7 +12,6 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  // Sample favorited items for Phase 1 frontend review
   final List<Product> _favoriteProducts = [
     const Product(
       id: 1,
@@ -34,16 +33,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saved Favorites', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Saved Collection'),
       ),
       body: _favoriteProducts.isEmpty
           ? EmptyView(
               icon: Icons.favorite_border_rounded,
-              title: 'No favorites yet',
+              title: 'No saved items yet',
               message: 'Explore the catalog and tap the heart icon to save products here.',
               action: FilledButton(
                 onPressed: () => context.go('/products'),
-                child: const Text('Browse Products'),
+                child: const Text('Explore Catalog'),
               ),
             )
           : LayoutBuilder(
@@ -53,12 +52,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     : (constraints.maxWidth < 900 ? 3 : 4);
 
                 return GridView.builder(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 100.0),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.68,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.65,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
                   ),
                   itemCount: _favoriteProducts.length,
                   itemBuilder: (context, index) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
+import 'fast_page.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
@@ -33,7 +34,7 @@ final GoRouter appRouter = GoRouter(
       path: '/signup',
       builder: (context, state) => const SignupScreen(),
     ),
-    // Stateful nested navigation for bottom bar
+    // Floating Pill Shell Navigation
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -77,18 +78,23 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
-    // Product Details route outside bottom nav
+    // Fast 220ms page transition for product details
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/products/:id',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final product = state.extra as Product?;
         if (product != null) {
-          return ProductDetailsScreen(product: product);
+          return fastPage(
+            key: state.pageKey,
+            child: ProductDetailsScreen(product: product),
+          );
         }
-        // Fallback placeholder if opened directly via URL
-        return const Scaffold(
-          body: Center(child: Text('Product details not available')),
+        return fastPage(
+          key: state.pageKey,
+          child: const Scaffold(
+            body: Center(child: Text('Product details not available')),
+          ),
         );
       },
     ),
