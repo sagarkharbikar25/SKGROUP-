@@ -1,42 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../products/data/models/product_model.dart';
+import '../application/favorites_notifier.dart';
 import '../../products/presentation/widgets/product_card.dart';
 import '../../../core/widgets/state_views.dart';
 
-class FavoritesScreen extends StatefulWidget {
+class FavoritesScreen extends ConsumerWidget {
   const FavoritesScreen({super.key});
 
   @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favorites = ref.watch(favoritesNotifierProvider);
+    final favoritesNotifier = ref.watch(favoritesNotifierProvider.notifier);
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
-  // Sample favorited items for Phase 1 frontend review
-  final List<Product> _favoriteProducts = [
-    const Product(
-      id: 1,
-      title: 'Essence Mascara Lash Princess',
-      description: 'The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects.',
-      category: 'beauty',
-      price: 9.99,
-      discountPercentage: 7.17,
-      rating: 4.94,
-      stock: 5,
-      tags: ['beauty', 'mascara'],
-      brand: 'Essence',
-      thumbnail: 'https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/thumbnail.png',
-      images: ['https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png'],
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Saved Favorites', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: _favoriteProducts.isEmpty
+      body: favorites.isEmpty
           ? EmptyView(
               icon: Icons.favorite_border_rounded,
               title: 'No favorites yet',
@@ -60,22 +41,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                   ),
-                  itemCount: _favoriteProducts.length,
+                  itemCount: favorites.length,
                   itemBuilder: (context, index) {
-                    final product = _favoriteProducts[index];
+                    final product = favorites[index];
                     return ProductCard(
                       product: product,
                       isFavorite: true,
                       onFavoriteToggle: () {
-                        setState(() {
-                          _favoriteProducts.removeAt(index);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Removed from favorites'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
+                        favoritesNotifier.toggleFavorite(product);
                       },
                       onTap: () => context.push('/products/${product.id}', extra: product),
                     );

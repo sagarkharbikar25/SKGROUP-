@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/theme_controller.dart';
+import '../../auth/application/auth_controller.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isDarkMode = false;
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
 
   void _showLogoutDialog() {
@@ -24,9 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              context.go('/login');
+              await ref.read(authControllerProvider.notifier).logout();
+              if (mounted) {
+                context.go('/login');
+              }
             },
             child: const Text('Log Out'),
           ),
@@ -38,6 +43,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authControllerProvider);
+    final themeMode = ref.watch(themeControllerProvider);
+    final user = authState.user;
+
+    final isDark = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,20 +68,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     CircleAvatar(
                       radius: 36,
                       backgroundColor: theme.colorScheme.primaryContainer,
-                      child: const Icon(Icons.person, size: 40),
+                      child: Text(
+                        (user?.firstName.isNotEmpty ?? false)
+                            ? user!.firstName[0].toUpperCase()
+                            : 'U',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Emily Johnson',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          Text(
+                            user?.fullName.isNotEmpty ?? false
+                                ? user!.fullName
+                                : 'Guest User',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '@emilys • emily.johnson@x.dummyjson.com',
+                            user?.email ?? 'Not logged in',
                             style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                           ),
                           const SizedBox(height: 8),
@@ -105,8 +128,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     secondary: const Icon(Icons.dark_mode_outlined),
                     title: const Text('Dark Mode'),
                     subtitle: const Text('Switch between light and dark themes'),
-                    value: _isDarkMode,
-                    onChanged: (val) => setState(() => _isDarkMode = val),
+                    value: isDark,
+                    onChanged: (val) {
+                      ref
+                          .read(themeControllerProvider.notifier)
+                          .setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+                    },
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
@@ -140,7 +167,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             OutlinedButton.icon(
               onPressed: _showLogoutDialog,
               icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text('Log Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              label: const Text('Log Out',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 side: const BorderSide(color: Colors.red),

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../application/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -30,16 +32,27 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // Simulate auth check for Phase 1 frontend review
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
+      final success = await ref.read(authControllerProvider.notifier).login(
+            _usernameController.text.trim(),
+            _passwordController.text.trim(),
+          );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
           context.go('/home');
+        } else {
+          final err = ref.read(authControllerProvider).errorMessage ?? 'Login failed';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(err),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
         }
-      });
+      }
     }
   }
 
@@ -59,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Header
                     Icon(
                       Icons.shopping_bag_rounded,
                       size: 48,
@@ -81,13 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Demo Credentials helper chip
+                    // Demo Credentials Helper Chip
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.Side(color: theme.colorScheme.primary.withOpacity(0.2)),
+                        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
                       ),
                       child: Row(
                         children: [
@@ -98,11 +110,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
                                 Text(
-                                  'Demo Account: emilys / emilyspass',
+                                  'Demo: emilys / emilyspass',
                                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                                 ),
                                 Text(
-                                  'Tap here to auto-fill credentials',
+                                  'Tap Auto-fill to test DummyJSON',
                                   style: TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                               ],
@@ -147,9 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Password is required';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
                         }
                         return null;
                       },

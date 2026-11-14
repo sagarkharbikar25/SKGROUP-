@@ -33,7 +33,7 @@ final GoRouter appRouter = GoRouter(
       path: '/signup',
       builder: (context, state) => const SignupScreen(),
     ),
-    // Stateful nested navigation for bottom bar
+    // Bottom navigation shell
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -77,7 +77,6 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
-    // Product Details route outside bottom nav
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/products/:id',
@@ -86,7 +85,6 @@ final GoRouter appRouter = GoRouter(
         if (product != null) {
           return ProductDetailsScreen(product: product);
         }
-        // Fallback placeholder if opened directly via URL
         return const Scaffold(
           body: Center(child: Text('Product details not available')),
         );

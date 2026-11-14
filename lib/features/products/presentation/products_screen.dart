@@ -1,108 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../data/models/product_model.dart';
+import '../application/product_list_notifier.dart';
+import '../../favorites/application/favorites_notifier.dart';
 import 'widgets/product_card.dart';
 import 'widgets/search_filter_bar.dart';
 import 'widgets/sort_bottom_sheet.dart';
 import '../../../core/widgets/state_views.dart';
 
-class ProductsScreen extends StatefulWidget {
+class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key});
 
   @override
-  State<ProductsScreen> createState() => _ProductsScreenState();
+  ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
 }
 
-class _ProductsScreenState extends State<ProductsScreen> {
+class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   final _searchController = TextEditingController();
-  String _searchQuery = '';
-  String? _selectedCategory;
-  String _sortBy = 'id';
-  String _order = 'asc';
+  final _scrollController = ScrollController();
 
-  // Sample static catalog for Phase 1 frontend review (Phase 3 wires to Riverpod)
-  final List<Product> _allProducts = const [
-    Product(
-      id: 1,
-      title: 'Essence Mascara Lash Princess',
-      description: 'The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects.',
-      category: 'beauty',
-      price: 9.99,
-      discountPercentage: 7.17,
-      rating: 4.94,
-      stock: 5,
-      tags: ['beauty', 'mascara'],
-      brand: 'Essence',
-      thumbnail: 'https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/thumbnail.png',
-      images: ['https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png'],
-    ),
-    Product(
-      id: 2,
-      title: 'Eyeshadow Palette with Mirror',
-      description: 'The Eyeshadow Palette with Mirror offers a versatile range of eyeshadow shades.',
-      category: 'beauty',
-      price: 19.99,
-      discountPercentage: 5.5,
-      rating: 3.28,
-      stock: 44,
-      tags: ['beauty', 'eyeshadow'],
-      brand: 'Glamour Beauty',
-      thumbnail: 'https://cdn.dummyjson.com/products/images/beauty/Eyeshadow%20Palette%20with%20Mirror/thumbnail.png',
-      images: ['https://cdn.dummyjson.com/products/images/beauty/Eyeshadow%20Palette%20with%20Mirror/1.png'],
-    ),
-    Product(
-      id: 3,
-      title: 'Powder Canister',
-      description: 'The Powder Canister is a finely milled setting powder designed to set makeup.',
-      category: 'beauty',
-      price: 14.99,
-      discountPercentage: 18.14,
-      rating: 3.82,
-      stock: 59,
-      tags: ['beauty', 'powder'],
-      brand: 'Velvet Touch',
-      thumbnail: 'https://cdn.dummyjson.com/products/images/beauty/Powder%20Canister/thumbnail.png',
-      images: ['https://cdn.dummyjson.com/products/images/beauty/Powder%20Canister/1.png'],
-    ),
-    Product(
-      id: 4,
-      title: 'Red Lipstick',
-      description: 'The Red Lipstick is a classic and bold choice for adding a pop of color to your lips.',
-      category: 'beauty',
-      price: 12.99,
-      discountPercentage: 19.03,
-      rating: 2.51,
-      stock: 68,
-      tags: ['beauty', 'lipstick'],
-      brand: 'Chic Cosmetics',
-      thumbnail: 'https://cdn.dummyjson.com/products/images/beauty/Red%20Lipstick/thumbnail.png',
-      images: ['https://cdn.dummyjson.com/products/images/beauty/Red%20Lipstick/1.png'],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
-  final List<String> _categories = const ['beauty', 'fragrances', 'furniture', 'groceries'];
-  final Set<int> _favoriteIds = {};
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      ref.read(productListNotifierProvider.notifier).loadMore();
+    }
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _openSortSheet() {
+    final catalogState = ref.read(productListNotifierProvider);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => SortBottomSheet(
-        currentSortBy: _sortBy,
-        currentOrder: _order,
+        currentSortBy: catalogState.sortBy,
+        currentOrder: catalogState.order,
         onSelect: (option) {
-          setState(() {
-            _sortBy = option.sortBy;
-            _order = option.order;
-          });
+          ref.read(productListNotifierProvider.notifier).setSort(option.sortBy, option.order);
         },
       ),
     );
@@ -110,14 +57,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtered list
-    final filtered = _allProducts.where((p) {
-      final matchesSearch = _searchQuery.isEmpty ||
-          p.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          p.brand.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCat = _selectedCategory == null || p.category == _selectedCategory;
-      return matchesSearch && matchesCat;
-    }).toList();
+    final catalogState = ref.watch(productListNotifierProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final favoritesNotifier = ref.watch(favoritesNotifierProvider.notifier);
+    final favoriteProducts = ref.watch(favoritesNotifierProvider);
+
+    final categories = categoriesAsync.maybeWhen(
+      data: (cats) => cats.map((c) => c.slug).toList(),
+      orElse: () => <String>[],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -125,59 +73,117 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
       body: Column(
         children: [
+          // Stale / Offline Banner
+          if (catalogState.isStale)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.amber.shade100,
+              child: Row(
+                children: [
+                  Icon(Icons.cloud_off_rounded, size: 18, color: Colors.amber.shade900),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Offline Mode — Showing saved catalog data',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.amber.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Search & Filter Bar
           SearchFilterBar(
             searchController: _searchController,
-            onSearchChanged: (val) => setState(() => _searchQuery = val),
-            categories: _categories,
-            selectedCategory: _selectedCategory,
-            onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
+            onSearchChanged: (val) {
+              ref.read(productListNotifierProvider.notifier).search(val);
+            },
+            categories: categories,
+            selectedCategory: catalogState.category,
+            onCategorySelected: (cat) {
+              ref.read(productListNotifierProvider.notifier).filterCategory(cat);
+            },
             onSortTap: _openSortSheet,
           ),
+
+          // Catalog Content
           Expanded(
-            child: filtered.isEmpty
-                ? const EmptyView(
-                    title: 'No products found',
-                    message: 'No items match your search or filter criteria.',
-                  )
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Responsive column count based on width:
-                      // <600dp: 2 columns, 600-900dp: 3 columns, >900dp: 4 columns
-                      final int crossAxisCount = constraints.maxWidth < 600
-                          ? 2
-                          : (constraints.maxWidth < 900 ? 3 : 4);
+            child: catalogState.isLoading
+                ? const LoadingView(message: 'Loading products...')
+                : catalogState.errorMessage != null && catalogState.products.isEmpty
+                    ? ErrorView(
+                        message: catalogState.errorMessage!,
+                        onRetry: () => ref.read(productListNotifierProvider.notifier).loadInitial(),
+                      )
+                    : catalogState.products.isEmpty
+                        ? const EmptyView(
+                            title: 'No products found',
+                            message: 'Try adjusting your search query or category filters.',
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () =>
+                                ref.read(productListNotifierProvider.notifier).loadInitial(),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final int crossAxisCount = constraints.maxWidth < 600
+                                    ? 2
+                                    : (constraints.maxWidth < 900 ? 3 : 4);
 
-                      return GridView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          childAspectRatio: 0.68,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final product = filtered[index];
-                          final isFav = _favoriteIds.contains(product.id);
+                                return CustomScrollView(
+                                  controller: _scrollController,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  slivers: [
+                                    SliverPadding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0, vertical: 8.0),
+                                      sliver: SliverGrid(
+                                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossAxisCount,
+                                          childAspectRatio: 0.68,
+                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12,
+                                        ),
+                                        delegate: SliverChildBuilderDelegate(
+                                          (context, index) {
+                                            final product = catalogState.products[index];
+                                            final isFav = favoriteProducts
+                                                .any((p) => p.id == product.id);
 
-                          return ProductCard(
-                            product: product,
-                            isFavorite: isFav,
-                            onFavoriteToggle: () {
-                              setState(() {
-                                if (isFav) {
-                                  _favoriteIds.remove(product.id);
-                                } else {
-                                  _favoriteIds.add(product.id);
-                                }
-                              });
-                            },
-                            onTap: () => context.push('/products/${product.id}', extra: product),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                                            return ProductCard(
+                                              product: product,
+                                              isFavorite: isFav,
+                                              onFavoriteToggle: () {
+                                                favoritesNotifier.toggleFavorite(product);
+                                              },
+                                              onTap: () => context.push(
+                                                '/products/${product.id}',
+                                                extra: product,
+                                              ),
+                                            );
+                                          },
+                                          childCount: catalogState.products.length,
+                                        ),
+                                      ),
+                                    ),
+                                    if (catalogState.isLoadingMore)
+                                      const SliverToBoxAdapter(
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                                          child: Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
           ),
         ],
       ),
