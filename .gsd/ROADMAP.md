@@ -7,12 +7,13 @@ updated: 2026-11-14T21:37:00+05:30
 # Roadmap: ShopSphere Product Catalog (3-Branch Workflow)
 
 > **Workflow:** `main` (Bootstrap) ➔ `feature/frontend` ➔ `feature/backend` (with `postman.json`) ➔ `feature/test` (Integration & QA)
-> **Status:** planning
+> **Status:** executing
+> **Current Phase:** Phase 1: Frontend Development (`feature/frontend`)
 > **Methodology:** GSD + Ponytail (Strict branch separation, no over-engineering)
 
 ## Must-Haves (from SPEC)
 
-- [ ] Project bootstrap & contracts on `main` (Android `INTERNET` permission included)
+- [x] Project bootstrap & contracts on `main` (Android `INTERNET` permission included)
 - [ ] `feature/frontend`: Complete responsive M3 UI (Splash, Login, Signup, Home, Catalog, Details, Favorites, Profile) on sample data
 - [ ] `feature/backend`: Dio network client, `SecureStore`, repositories, Riverpod notifiers, offline fallback
 - [ ] `feature/backend`: Complete `docs/postman.json` collection for backend verification
@@ -26,16 +27,18 @@ updated: 2026-11-14T21:37:00+05:30
 
 ### Phase 0: Project Bootstrap & Contracts (`main`)
 **Branch:** `main`
+**Status:** ✅ Complete
 **Objective:** Initialize Flutter app, add dependencies, create folder structure, write models and abstract contracts, set Android INTERNET permission, and commit base before branching.
 
 **Plans:**
-- [ ] Plan 0.1: Flutter project scaffold, dependencies (`pubspec.yaml`), and `AndroidManifest.xml`
-- [ ] Plan 0.2: Core models (`Product`, `AppUser`, `Category`), `AppFailure`, and sample JSON fixtures
+- [x] Plan 0.1: Flutter project scaffold, dependencies (`pubspec.yaml`), and `AndroidManifest.xml`
+- [x] Plan 0.2: Core models (`Product`, `AppUser`, `Category`), `AppFailure`, and sample JSON fixtures
 
 ---
 
 ### Phase 1: Frontend Development (`feature/frontend`)
 **Branch:** `feature/frontend` (branch from `main`)
+**Status:** 🔄 In Progress
 **Objective:** Build complete responsive presentation layer, Material 3 theme (Light/Dark), GoRouter with bottom navigation shell, and all screens rendered using sample models.
 
 **Plans:**
