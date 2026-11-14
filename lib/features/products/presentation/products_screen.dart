@@ -7,6 +7,7 @@ import 'widgets/product_card.dart';
 import 'widgets/search_filter_bar.dart';
 import 'widgets/sort_bottom_sheet.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/app_refresh.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key});
@@ -69,7 +70,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Catalog'),
       ),
       body: Column(
         children: [
@@ -111,24 +112,33 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             onSortTap: _openSortSheet,
           ),
 
-          // Catalog Content
+          // Catalog Content with AppRefresh pull-to-refresh
           Expanded(
-            child: catalogState.isLoading
-                ? const LoadingView(message: 'Loading products...')
-                : catalogState.errorMessage != null && catalogState.products.isEmpty
-                    ? ErrorView(
-                        message: catalogState.errorMessage!,
-                        onRetry: () => ref.read(productListNotifierProvider.notifier).loadInitial(),
-                      )
-                    : catalogState.products.isEmpty
-                        ? const EmptyView(
-                            title: 'No products found',
-                            message: 'Try adjusting your search query or category filters.',
-                          )
-                        : RefreshIndicator(
-                            onRefresh: () =>
-                                ref.read(productListNotifierProvider.notifier).loadInitial(),
-                            child: LayoutBuilder(
+            child: AppRefresh(
+              onRefresh: () => ref.read(productListNotifierProvider.notifier).loadInitial(),
+              child: catalogState.isLoading
+                  ? const LoadingView(message: 'Loading products...')
+                  : catalogState.errorMessage != null && catalogState.products.isEmpty
+                      ? ErrorView(
+                          message: catalogState.errorMessage!,
+                          onRetry: () =>
+                              ref.read(productListNotifierProvider.notifier).loadInitial(),
+                        )
+                      : catalogState.products.isEmpty
+                          ? const CustomScrollView(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              slivers: [
+                                SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: EmptyView(
+                                    title: 'No products found',
+                                    message:
+                                        'Try adjusting your search query or category filters.',
+                                  ),
+                                ),
+                              ],
+                            )
+                          : LayoutBuilder(
                               builder: (context, constraints) {
                                 final int crossAxisCount = constraints.maxWidth < 600
                                     ? 2
@@ -139,14 +149,15 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                   physics: const AlwaysScrollableScrollPhysics(),
                                   slivers: [
                                     SliverPadding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 8.0),
+                                      padding: const EdgeInsets.fromLTRB(
+                                          16.0, 8.0, 16.0, 100.0),
                                       sliver: SliverGrid(
-                                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: crossAxisCount,
-                                          childAspectRatio: 0.68,
-                                          crossAxisSpacing: 12,
-                                          mainAxisSpacing: 12,
+                                          childAspectRatio: 0.65,
+                                          crossAxisSpacing: 14,
+                                          mainAxisSpacing: 14,
                                         ),
                                         delegate: SliverChildBuilderDelegate(
                                           (context, index) {
@@ -183,7 +194,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                 );
                               },
                             ),
-                          ),
+            ),
           ),
         ],
       ),

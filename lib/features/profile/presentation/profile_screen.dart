@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../auth/application/auth_controller.dart';
 
@@ -43,6 +44,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final authState = ref.watch(authControllerProvider);
     final themeMode = ref.watch(themeControllerProvider);
     final user = authState.user;
@@ -51,83 +53,104 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         (themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.dark);
 
+    String initials = 'U';
+    if (user != null && user.firstName.isNotEmpty) {
+      initials = user.firstName[0].toUpperCase();
+      if (user.lastName.isNotEmpty) {
+        initials += user.lastName[0].toUpperCase();
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Account'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 100.0),
         child: Column(
           children: [
-            // User Avatar Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: theme.colorScheme.primaryContainer,
-                      child: Text(
-                        (user?.firstName.isNotEmpty ?? false)
-                            ? user!.firstName[0].toUpperCase()
-                            : 'U',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
+            // User Avatar Card with Serif Monogram
+            Container(
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(AppRadius.m),
+                border: Border.all(color: cs.outline),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 36,
+                    backgroundColor: cs.primary.withOpacity(0.12),
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: cs.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.fullName.isNotEmpty ?? false
+                              ? user!.fullName
+                              : 'Emily Johnson',
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: cs.onSurface,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.fullName.isNotEmpty ?? false
-                                ? user!.fullName
-                                : 'Guest User',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        const SizedBox(height: 3),
+                        Text(
+                          user?.email ?? 'emily.johnson@x.dummyjson.com',
+                          style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: cs.secondary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'Not logged in',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'Verified Account',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          child: Text(
+                            'VERIFIED BUYER',
+                            style: TextStyle(
+                              color: cs.secondary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Settings Section
-            Card(
+            // Settings Group
+            Container(
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(AppRadius.m),
+                border: Border.all(color: cs.outline),
+              ),
               child: Column(
                 children: [
                   SwitchListTile(
-                    secondary: const Icon(Icons.dark_mode_outlined),
-                    title: const Text('Dark Mode'),
-                    subtitle: const Text('Switch between light and dark themes'),
+                    secondary: Icon(Icons.dark_mode_outlined, color: cs.onSurface),
+                    title: Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                    subtitle: Text('Warm paper vs Night slate theme', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     value: isDark,
                     onChanged: (val) {
                       ref
@@ -135,27 +158,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           .setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
                     },
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: cs.outline),
                   SwitchListTile(
-                    secondary: const Icon(Icons.notifications_outlined),
-                    title: const Text('Notifications'),
-                    subtitle: const Text('Order updates and promotions'),
+                    secondary: Icon(Icons.notifications_none_rounded, color: cs.onSurface),
+                    title: Text('Push Notifications', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                    subtitle: Text('Order and catalogue updates', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
                     value: _notificationsEnabled,
                     onChanged: (val) => setState(() => _notificationsEnabled = val),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: cs.outline),
                   ListTile(
-                    leading: const Icon(Icons.shield_outlined),
-                    title: const Text('Security & Privacy'),
-                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    leading: Icon(Icons.security_outlined, color: cs.onSurface),
+                    title: Text('Security & Key Store', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                    trailing: Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
                     onTap: () {},
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: cs.outline),
                   ListTile(
-                    leading: const Icon(Icons.info_outline),
-                    title: const Text('App Information'),
-                    subtitle: const Text('ShopSphere v1.0.0 (Sankar Group)'),
-                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    leading: Icon(Icons.info_outline, color: cs.onSurface),
+                    title: Text('About ShopSphere', style: TextStyle(fontWeight: FontWeight.w600, color: cs.onSurface)),
+                    subtitle: Text('Warm Editorial Edition v1.0.0', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+                    trailing: Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
                     onTap: () {},
                   ),
                 ],
@@ -166,13 +189,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             // Logout Button
             OutlinedButton.icon(
               onPressed: _showLogoutDialog,
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text('Log Out',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.logout_rounded, color: cs.error),
+              label: Text('Sign Out', style: TextStyle(color: cs.error, fontWeight: FontWeight.bold)),
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                side: const BorderSide(color: Colors.red),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                minimumSize: const Size.fromHeight(50),
+                side: BorderSide(color: cs.error.withOpacity(0.5)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.m)),
               ),
             ),
           ],
